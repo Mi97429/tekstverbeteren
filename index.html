@@ -3,89 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Passé Composé – Fouten Verbeteren</title>
+<title>Passé Composé – Tekst verbeteren</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body {
-    background: white;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-}
+    body {
+        background:white;
+        padding:20px;
+        font-family:Arial, sans-serif;
+    }
 
-.word {
-    padding: 2px 6px;
-    border-radius: 4px;
-    cursor: pointer;
-}
+    .editable {
+        display:inline-block;
+        padding:2px 4px;
+        border-radius:3px;
+        cursor:text;
+    }
 
-.correct {
-    background-color: #d4f8d4;
-    border-bottom: 2px solid green;
-}
+    .correct {
+        background:#d4f8d4;
+        border-bottom:2px solid green;
+    }
 
-.incorrect {
-    background-color: #ffd6d6;
-    border-bottom: 2px solid red;
-}
+    .incorrect {
+        background:#ffd6d6;
+        border-bottom:2px solid red;
+    }
 
-#feedback {
-    font-weight: bold;
-    margin-top: 15px;
-}
+    #scoreBox {
+        margin-top:15px;
+        font-size:18px;
+        font-weight:bold;
+    }
 </style>
 </head>
+
 <body>
-
 <div class="container">
-    <h3 class="mb-3">📝 Oefening: verbeter de passé composé</h3>
-    <p>Klik op een fout woord om het te corrigeren.</p>
 
-    <!-- Tekst met fouten -->
-    <p id="text">
-        Hier <span class="word" data-answer="ai parlé">ai parler</span> avec Marie ce matin.
-        Elle <span class="word" data-answer="est arrivée">est arriver</span> en retard.
-        Nous <span class="word" data-answer="avons mangé">avons manger</span> ensemble dans la cantine.
-        Après, ils <span class="word" data-answer="ont commencé">ont commencer</span> leur travail.
-        Marie <span class="word" data-answer="s'est dépêchée">s'est dépêcher</span> pour aller en classe.
-    </p>
+<h3>📝 Oefening: verbeter de passé composé in deze tekst</h3>
+<p>Klik op woorden om ze aan te passen en controleer je score.</p>
 
-    <button id="showAnswers" class="btn btn-secondary mt-3">Toon alle juiste antwoorden</button>
+<!-- SCORE -->
+<div id="scoreBox">Score: 0 / 25 correct</div>
 
-    <div id="feedback"></div>
+<!-- LANGE TEKST MET 25 FOUTEN -->
+<p id="text">
+Hier <span class="editable" contenteditable="true" data-correct="ai commencé">ai commencer</span> ma journée très tôt. 
+Je <span class="editable" contenteditable="true" data-correct="me suis réveillé">me suis réveiller</span> avant le soleil. 
+Ensuite, je <span class="editable" contenteditable="true" data-correct="ai préparé">ai preparer</span> mon petit-déjeuner.
+Ma sœur <span class="editable" contenteditable="true" data-correct="s'est levée">s'est lever</span> un peu plus tard. 
+Nous <span class="editable" contenteditable="true" data-correct="avons parlé">avons parler</span> de nos plans pour la journée.
+
+Quand nous <span class="editable" contenteditable="true" data-correct="sommes arrivés">sommes arriver</span> à l'école, il <span class="editable" contenteditable="true" data-correct="a commencé">a commencer</span> à pleuvoir. 
+Les élèves que j'<span class="editable" contenteditable="true" data-correct="ai rencontrés">ai rencontrer</span> ce matin étaient tous trempés. 
+Dans la classe, le professeur <span class="editable" contenteditable="true" data-correct="a expliqué">a expliquer</span> une nouvelle leçon. 
+Je <span class="editable" contenteditable="true" data-correct="ai écrit">ai ecrit</span> toutes mes notes attentivement.
+
+Plus tard, nous <span class="editable" contenteditable="true" data-correct="avons fait">avons faire</span> un exercice difficile. 
+Paul <span class="editable" contenteditable="true" data-correct="a réussi">a reussi</span> rapidement, mais moi, je <span class="editable" contenteditable="true" data-correct="ai essayé">ai essayer</span> longtemps avant de comprendre. 
+Pendant la pause, mes amis <span class="editable" contenteditable="true" data-correct="ont joué">ont jouer</span> au foot, mais Julie <span class="editable" contenteditable="true" data-correct="s'est reposée">s'est reposer</span> parce qu'elle était fatiguée.
+
+Après l’école, nous <span class="editable" contenteditable="true" data-correct="sommes allés">sommes aller</span> au centre-ville. 
+Nous <span class="editable" contenteditable="true" data-correct="avons acheté">avons acheter</span> des cadeaux pour l'anniversaire de Camille. 
+Quand nous <span class="editable" contenteditable="true" data-correct="sommes rentrés">sommes rentrer</span> chez nous, maman <span class="editable" contenteditable="true" data-correct="a préparé">a preparé</span> un bon repas.
+
+Le soir, je <span class="editable" contenteditable="true" data-correct="me suis détendu">me suis detendre</span> en regardant un film. 
+Puis je <span class="editable" contenteditable="true" data-correct="ai terminé">ai terminer</span> mes devoirs. 
+Avant de dormir, j'<span class="editable" contenteditable="true" data-correct="ai envoyé">ai envoyer</span> un message à mes amis pour leur dire bonne nuit.
+</p>
+
+<!-- BUTTONS -->
+<button id="check" class="btn btn-primary mt-3">Controleer</button>
+<button id="reset" class="btn btn-secondary mt-3">Reset</button>
+
 </div>
 
-
 <script>
-// Klik op een woord om het te verbeteren
-document.querySelectorAll('.word').forEach(word => {
-    word.addEventListener('click', () => {
-        const userInput = prompt("Vul de correcte vorm in:");
-        if (!userInput) return;
+// Tel het aantal fouten
+const total = document.querySelectorAll(".editable").length;
+document.getElementById("scoreBox").textContent = `Score: 0 / ${total} correct`;
 
-        const correct = word.dataset.answer.trim().toLowerCase();
-        const answer = userInput.trim().toLowerCase();
+document.getElementById("check").addEventListener("click", () => {
+    let score = 0;
 
-        word.textContent = userInput;
+    document.querySelectorAll(".editable").forEach(word => {
+        const correct = word.dataset.correct.trim().toLowerCase();
+        const user = word.textContent.trim().toLowerCase();
 
-        if (answer === correct) {
-            word.classList.remove("incorrect");
+        word.classList.remove("correct", "incorrect");
+
+        if (user === correct) {
             word.classList.add("correct");
+            score++;
         } else {
-            word.classList.remove("correct");
             word.classList.add("incorrect");
         }
     });
+
+    document.getElementById("scoreBox").textContent = `Score: ${score} / ${total} correct`;
 });
 
-// Toon alle antwoorden knop
-document.getElementById("showAnswers").addEventListener("click", () => {
-    document.querySelectorAll('.word').forEach(word => {
-        word.textContent = word.dataset.answer;
-        word.classList.add("correct");
-        word.classList.remove("incorrect");
+// Reset
+document.getElementById("reset").addEventListener("click", () => {
+    document.querySelectorAll(".editable").forEach(word => {
+        word.textContent = word.dataset.correct; // terugzetten op juiste tekst
+        word.classList.remove("correct", "incorrect");
     });
+
+    document.getElementById("scoreBox").textContent = `Score: 0 / ${total} correct`;
 });
 </script>
 
