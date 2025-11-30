@@ -129,6 +129,30 @@ function renderEditable(text) {
 // Initialiseer de starttekst
 renderEditable(startText);
 
+// LIVE SCORE functie
+function updateLiveScore() {
+    const correctWords = correctText.trim().split(/\s+/);
+    const userWords = document.querySelectorAll(".word");
+
+    let score = 0;
+
+    userWords.forEach((span, i) => {
+        const user = span.textContent.trim();
+        const correct = correctWords[i] ?? "";
+
+        span.classList.remove("correct", "incorrect");
+
+        if (user === correct) {
+            span.classList.add("correct");
+            score++;
+        } else {
+            span.classList.add("incorrect");
+        }
+    });
+
+    document.getElementById("scoreBox").textContent =
+        `Score: ${score} / ${correctWords.length} correct`;
+}
 // Controleknop
 document.getElementById("check").addEventListener("click", () => {
     const correctWords = correctText.trim().split(/\s+/);
