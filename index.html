@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passé Composé – Fouten Verbeteren</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body {
+    background: white;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.word {
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.correct {
+    background-color: #d4f8d4;
+    border-bottom: 2px solid green;
+}
+
+.incorrect {
+    background-color: #ffd6d6;
+    border-bottom: 2px solid red;
+}
+
+#feedback {
+    font-weight: bold;
+    margin-top: 15px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h3 class="mb-3">📝 Oefening: verbeter de passé composé</h3>
+    <p>Klik op een fout woord om het te corrigeren.</p>
+
+    <!-- Tekst met fouten -->
+    <p id="text">
+        Hier <span class="word" data-answer="ai parlé">ai parler</span> avec Marie ce matin.
+        Elle <span class="word" data-answer="est arrivée">est arriver</span> en retard.
+        Nous <span class="word" data-answer="avons mangé">avons manger</span> ensemble dans la cantine.
+        Après, ils <span class="word" data-answer="ont commencé">ont commencer</span> leur travail.
+        Marie <span class="word" data-answer="s'est dépêchée">s'est dépêcher</span> pour aller en classe.
+    </p>
+
+    <button id="showAnswers" class="btn btn-secondary mt-3">Toon alle juiste antwoorden</button>
+
+    <div id="feedback"></div>
+</div>
+
+
+<script>
+// Klik op een woord om het te verbeteren
+document.querySelectorAll('.word').forEach(word => {
+    word.addEventListener('click', () => {
+        const userInput = prompt("Vul de correcte vorm in:");
+        if (!userInput) return;
+
+        const correct = word.dataset.answer.trim().toLowerCase();
+        const answer = userInput.trim().toLowerCase();
+
+        word.textContent = userInput;
+
+        if (answer === correct) {
+            word.classList.remove("incorrect");
+            word.classList.add("correct");
+        } else {
+            word.classList.remove("correct");
+            word.classList.add("incorrect");
+        }
+    });
+});
+
+// Toon alle antwoorden knop
+document.getElementById("showAnswers").addEventListener("click", () => {
+    document.querySelectorAll('.word').forEach(word => {
+        word.textContent = word.dataset.answer;
+        word.classList.add("correct");
+        word.classList.remove("incorrect");
+    });
+});
+</script>
+
+</body>
+</html>
