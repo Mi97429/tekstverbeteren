@@ -14,11 +14,12 @@
         font-family:Arial, sans-serif;
     }
 
-    .editable {
+    .word {
         display:inline-block;
         padding:2px 4px;
         border-radius:3px;
         cursor:text;
+        margin-right:2px;
     }
 
     .correct {
@@ -42,77 +43,120 @@
 <body>
 <div class="container">
 
-<h3>📝 Oefening: verbeter de passé composé in deze tekst</h3>
-<p>Klik op woorden om ze aan te passen en controleer je score.</p>
+<h3>📝 Oefening: verbeter de passé composé in de tekst</h3>
+<p>Klik op woorden om ze aan te passen. Alles wordt gecontroleerd.</p>
 
-<!-- SCORE -->
-<div id="scoreBox">Score: 0 / 25 correct</div>
+<div id="scoreBox">Score: 0 correct</div>
 
-<!-- LANGE TEKST MET 25 FOUTEN -->
-<p id="text">
-Hier <span class="editable" contenteditable="true" data-correct="ai commencé">ai commencer</span> ma journée très tôt. 
-Je <span class="editable" contenteditable="true" data-correct="me suis réveillé">me suis réveiller</span> avant le soleil. 
-Ensuite, je <span class="editable" contenteditable="true" data-correct="ai préparé">ai preparer</span> mon petit-déjeuner.
-Ma sœur <span class="editable" contenteditable="true" data-correct="s'est levée">s'est lever</span> un peu plus tard. 
-Nous <span class="editable" contenteditable="true" data-correct="avons parlé">avons parler</span> de nos plans pour la journée.
+<!-- DE JUISTE TEKST (MODEL) -->
+<script>
+const correctText = `
+Hier ai commencé ma journée très tôt. 
+Je me suis réveillé avant le soleil. 
+Ensuite, j'ai préparé mon petit-déjeuner. 
+Ma sœur s'est levée un peu plus tard. 
+Nous avons parlé de nos plans pour la journée.
 
-Quand nous <span class="editable" contenteditable="true" data-correct="sommes arrivés">sommes arriver</span> à l'école, il <span class="editable" contenteditable="true" data-correct="a commencé">a commencer</span> à pleuvoir. 
-Les élèves que j'<span class="editable" contenteditable="true" data-correct="ai rencontrés">ai rencontrer</span> ce matin étaient tous trempés. 
-Dans la classe, le professeur <span class="editable" contenteditable="true" data-correct="a expliqué">a expliquer</span> une nouvelle leçon. 
-Je <span class="editable" contenteditable="true" data-correct="ai écrit">ai ecrit</span> toutes mes notes attentivement.
+Quand nous sommes arrivés à l'école, il a commencé à pleuvoir. 
+Les élèves que j'ai rencontrés ce matin étaient tous trempés. 
+Dans la classe, le professeur a expliqué une nouvelle leçon. 
+J'ai écrit toutes mes notes attentivement.
 
-Plus tard, nous <span class="editable" contenteditable="true" data-correct="avons fait">avons faire</span> un exercice difficile. 
-Paul <span class="editable" contenteditable="true" data-correct="a réussi">a reussi</span> rapidement, mais moi, je <span class="editable" contenteditable="true" data-correct="ai essayé">ai essayer</span> longtemps avant de comprendre. 
-Pendant la pause, mes amis <span class="editable" contenteditable="true" data-correct="ont joué">ont jouer</span> au foot, mais Julie <span class="editable" contenteditable="true" data-correct="s'est reposée">s'est reposer</span> parce qu'elle était fatiguée.
+Plus tard, nous avons fait un exercice difficile. 
+Paul a réussi rapidement, maar moi, j'ai essayé longtemps avant de comprendre. 
+Pendant la pause, mes amis ont joué au foot, maar Julie s'est reposée parce qu'elle était fatiguée.
 
-Après l’école, nous <span class="editable" contenteditable="true" data-correct="sommes allés">sommes aller</span> au centre-ville. 
-Nous <span class="editable" contenteditable="true" data-correct="avons acheté">avons acheter</span> des cadeaux pour l'anniversaire de Camille. 
-Quand nous <span class="editable" contenteditable="true" data-correct="sommes rentrés">sommes rentrer</span> chez nous, maman <span class="editable" contenteditable="true" data-correct="a préparé">a preparé</span> un bon repas.
+Après l’école, nous sommes allés au centre-ville. 
+Nous avons acheté des cadeaux pour l'anniversaire de Camille. 
+Quand nous sommes rentrés chez nous, maman a préparé un bon repas.
 
-Le soir, je <span class="editable" contenteditable="true" data-correct="me suis détendu">me suis detendre</span> en regardant un film. 
-Puis je <span class="editable" contenteditable="true" data-correct="ai terminé">ai terminer</span> mes devoirs. 
-Avant de dormir, j'<span class="editable" contenteditable="true" data-correct="ai envoyé">ai envoyer</span> un message à mes amis pour leur dire bonne nuit.
-</p>
+Le soir, je me suis détendu en regardant un film. 
+Puis j'ai terminé mes devoirs. 
+Avant de dormir, j'ai envoyé un message à mes amis pour leur dire bonne nuit.
+`;
+</script>
 
-<!-- BUTTONS -->
+<!-- FOUTIEVE STARTTEKST (WAT LEERLING ZIET) -->
+<div id="text"></div>
+
+<!-- KNOPPEN -->
 <button id="check" class="btn btn-primary mt-3">Controleer</button>
 <button id="reset" class="btn btn-secondary mt-3">Reset</button>
 
-</div>
-
 <script>
-// Tel het aantal fouten
-const total = document.querySelectorAll(".editable").length;
-document.getElementById("scoreBox").textContent = `Score: 0 / ${total} correct`;
+// Foutieve versie (kan je aanpassen)
+const startText = `
+Hier ai commencer ma journée très tôt. 
+Je me suis réveiller avant le soleil. 
+Ensuite, j'ai preparer mon petit-déjeuner. 
+Ma sœur s'est lever un peu plus tard. 
+Nous avons parler de nos plans voor la journée.
 
+Quand nous sommes arriver à l'école, il a commencer à pleuvoir. 
+Les élèves que j'ai rencontrer ce matin étaient tous trempés. 
+Dans la classe, le professeur a expliquer une nouvelle leçon. 
+J'ai ecrit toutes mes notes attentivement.
+
+Plus tard, nous avons faire un exercice difficile. 
+Paul a reussi rapidement, maar moi, j'ai essayer longtemps avant de comprendre. 
+Pendant la pause, mes amis ont jouer au foot, maar Julie s'est reposer parce qu'elle était fatiguée.
+
+Après l’école, nous sommes aller au centre-ville. 
+Nous avons acheter des cadeaux pour l'anniversaire de Camille. 
+Quand nous sommes rentrer chez nous, maman a preparé un bon repas.
+
+Le soir, je me suis detendre en regardant un film. 
+Puis j'ai terminer mes devoirs. 
+Avant de dormir, j'ai envoyer un message à mes amis pour leur dire bonne nuit.
+`;
+
+// Functie om woorden in span-tags te wikkelen
+function renderEditable(text) {
+    const container = document.getElementById("text");
+    container.innerHTML = "";
+
+    text.split(/\s+/).forEach(word => {
+        if (word.trim() === "") return;
+        const span = document.createElement("span");
+        span.className = "word";
+        span.contentEditable = "true";
+        span.textContent = word;
+        container.appendChild(span);
+        container.appendChild(document.createTextNode(" "));
+    });
+}
+
+// Initialiseer de starttekst
+renderEditable(startText);
+
+// Controleknop
 document.getElementById("check").addEventListener("click", () => {
+    const correctWords = correctText.trim().split(/\s+/);
+    const userWords = document.querySelectorAll(".word");
+
     let score = 0;
 
-    document.querySelectorAll(".editable").forEach(word => {
-        const correct = word.dataset.correct.trim().toLowerCase();
-        const user = word.textContent.trim().toLowerCase();
+    userWords.forEach((span, i) => {
+        const user = span.textContent.trim();
+        const correct = correctWords[i] ?? "";
 
-        word.classList.remove("correct", "incorrect");
+        span.classList.remove("correct", "incorrect");
 
         if (user === correct) {
-            word.classList.add("correct");
+            span.classList.add("correct");
             score++;
         } else {
-            word.classList.add("incorrect");
+            span.classList.add("incorrect");
         }
     });
 
-    document.getElementById("scoreBox").textContent = `Score: ${score} / ${total} correct`;
+    document.getElementById("scoreBox").textContent = `Score: ${score} / ${correctWords.length} correct`;
 });
 
 // Reset
 document.getElementById("reset").addEventListener("click", () => {
-    document.querySelectorAll(".editable").forEach(word => {
-        word.textContent = word.dataset.correct; // terugzetten op juiste tekst
-        word.classList.remove("correct", "incorrect");
-    });
-
-    document.getElementById("scoreBox").textContent = `Score: 0 / ${total} correct`;
+    renderEditable(startText);
+    document.getElementById("scoreBox").textContent = `Score: 0 correct`;
 });
 </script>
 
