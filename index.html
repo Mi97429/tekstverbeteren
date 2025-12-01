@@ -1,137 +1,66 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Passé Composé – Live Oefening</title>
+import { useState } from "react";
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+const sentences = [
+  {
+    text: ["J’", "avant de sortir."],
+    answers: ["avais", "mangé"],
+    explanation: "Correct! Eerst had ik gegeten (avais mangé), daarna ging ik naar buiten."
+  },
+  {
+    text: ["Elle", "quand je suis arrivé."],
+    answers: ["était", "partie"],
+    explanation: "Correct! Zij was al vertrokken (était partie) toen ik aankwam."
+  },
+  {
+    text: ["Nous", "nos devoirs avant le dîner."],
+    answers: ["avions", "fini"],
+    explanation: "Correct! Wij hadden onze huiswerk al afgemaakt (avions fini) voor het diner."
+  }
+];
 
-<style>
-body {
-    background:white;
-    padding:20px;
-    font-family:Arial, sans-serif;
-}
+export default function PlusQueParfaitExercise() {
+  const [inputs, setInputs] = useState(sentences.map(s => Array(s.answers.length).fill("")));
+  const [score, setScore] = useState(0);
 
-.word {
-    display:inline-block;
-    padding:2px 4px;
-    border-radius:3px;
-    cursor:text;
-    margin-right:2px;
-}
+  const handleChange = (sentenceIdx, wordIdx, value) => {
+    const newInputs = [...inputs];
+    newInputs[sentenceIdx][wordIdx] = value;
+    setInputs(newInputs);
 
-.correct {
-    background:#d4f8d4;
-    border-bottom:2px solid green;
-}
-
-.incorrect {
-    background:#ffd6d6;
-    border-bottom:2px solid red;
-}
-
-#scoreBox {
-    margin-top:15px;
-    font-size:18px;
-    font-weight:bold;
-}
-</style>
-</head>
-
-<body>
-<div class="container">
-
-<h3>📝 Oefening: verbeter de passé composé in de tekst</h3>
-<p>Klik op de woorden om ze aan te passen. De score wordt automatisch bijgewerkt.</p>
-
-<div id="scoreBox">Score: 0 / 52 correct</div>
-
-<p id="text">
-<span class="word" contenteditable="true" data-correct="Hier">Hier</span>
-<span class="word" contenteditable="true" data-correct="ai commencé">ai commencer</span>
-<span class="word" contenteditable="true" data-correct="ma">ma</span>
-<span class="word" contenteditable="true" data-correct="journée">journée</span>
-<span class="word" contenteditable="true" data-correct="très">très</span>
-<span class="word" contenteditable="true" data-correct="tôt.">tôt.</span>
-
-<span class="word" contenteditable="true" data-correct="Je">Je</span>
-<span class="word" contenteditable="true" data-correct="me suis réveillé">me suis réveiller</span>
-<span class="word" contenteditable="true" data-correct="avant">avant</span>
-<span class="word" contenteditable="true" data-correct="le">le</span>
-<span class="word" contenteditable="true" data-correct="soleil.">soleil.</span>
-
-<span class="word" contenteditable="true" data-correct="Ensuite,">Ensuite,</span>
-<span class="word" contenteditable="true" data-correct="j'ai préparé">j'ai preparer</span>
-<span class="word" contenteditable="true" data-correct="mon">mon</span>
-<span class="word" contenteditable="true" data-correct="petit-déjeuner.">petit-déjeuner.</span>
-
-<span class="word" contenteditable="true" data-correct="Ma">Ma</span>
-<span class="word" contenteditable="true" data-correct="sœur">sœur</span>
-<span class="word" contenteditable="true" data-correct="s'est levée">s'est lever</span>
-<span class="word" contenteditable="true" data-correct="un peu plus tard.">un peu plus tard.</span>
-
-<span class="word" contenteditable="true" data-correct="Nous">Nous</span>
-<span class="word" contenteditable="true" data-correct="avons parlé">avons parler</span>
-<span class="word" contenteditable="true" data-correct="de">de</span>
-<span class="word" contenteditable="true" data-correct="nos">nos</span>
-<span class="word" contenteditable="true" data-correct="plans">plans</span>
-<span class="word" contenteditable="true" data-correct="pour">pour</span>
-<span class="word" contenteditable="true" data-correct="la">la</span>
-<span class="word" contenteditable="true" data-correct="journée.">journée.</span>
-
-<span class="word" contenteditable="true" data-correct="Quand">Quand</span>
-<span class="word" contenteditable="true" data-correct="nous">nous</span>
-<span class="word" contenteditable="true" data-correct="sommes arrivés">sommes arriver</span>
-<span class="word" contenteditable="true" data-correct="à">à</span>
-<span class="word" contenteditable="true" data-correct="l'école,">l'école,</span>
-<span class="word" contenteditable="true" data-correct="il">il</span>
-<span class="word" contenteditable="true" data-correct="a commencé">a commencer</span>
-<span class="word" contenteditable="true" data-correct="à pleuvoir.">à pleuvoir.</span>
-
-<!-- Je kan op dezelfde manier de rest van de tekst toevoegen -->
-</p>
-
-<button id="reset" class="btn btn-secondary mt-3">Reset</button>
-
-</div>
-
-<script>
-// Live score functie
-function updateLiveScore() {
-    const words = document.querySelectorAll(".word");
-    let score = 0;
-    words.forEach((span) => {
-        const correct = span.dataset.correct.trim();
-        const user = span.textContent.trim();
-        span.classList.remove("correct", "incorrect");
-        if (user === correct) {
-            span.classList.add("correct");
-            score++;
-        } else {
-            span.classList.add("incorrect");
-        }
+    // Bereken score live
+    let correctCount = 0;
+    newInputs.forEach((words, idx) => {
+      if(words.every((w, i) => w.toLowerCase().trim() === sentences[idx].answers[i])) correctCount++;
     });
-    document.getElementById("scoreBox").textContent = `Score: ${score} / ${words.length} correct`;
+    setScore(correctCount);
+  };
+
+  const reset = () => {
+    setInputs(sentences.map(s => Array(s.answers.length).fill("")));
+    setScore(0);
+  };
+
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
+      <h2 className="text-xl font-bold mb-4">Oefening: Plus-que-parfait</h2>
+      <div className="mb-4 font-semibold">Score: {score} / {sentences.length}</div>
+
+      {sentences.map((s, idx) => (
+        <div key={idx} className="flex flex-wrap items-center gap-2 mb-3">
+          {s.text.slice(0,1).map((part, i) => <span key={i}>{part}</span>)}
+          {s.answers.map((_, i) => (
+            <input
+              key={i}
+              className={`border p-1 w-24 ${inputs[idx][i] === s.answers[i] ? 'border-green-500 bg-green-100' : ''}`}
+              value={inputs[idx][i]}
+              onChange={e => handleChange(idx, i, e.target.value)}
+            />
+          ))}
+          <span>{s.text.slice(1)}</span>
+        </div>
+      ))}
+
+      <button onClick={reset} className="mt-4 px-3 py-1 bg-gray-300 rounded">Reset</button>
+    </div>
+  );
 }
-
-// Voeg input event toe aan elke span
-document.querySelectorAll(".word").forEach((span) => {
-    span.addEventListener("input", updateLiveScore);
-});
-
-// Init score
-updateLiveScore();
-
-// Reset
-document.getElementById("reset").addEventListener("click", () => {
-    document.querySelectorAll(".word").forEach(span => {
-        span.textContent = span.dataset.correct.replace(/é|è|ê|ç/g, m => m); // of de starttekst indien gewenst
-        span.classList.remove("correct", "incorrect");
-    });
-    updateLiveScore();
-});
-</script>
-</body>
-</html>
