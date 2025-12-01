@@ -1,21 +1,21 @@
 import { useState } from "react";
 
 const sentences = [
-  {
-    text: ["J’", "avant de sortir."],
-    answers: ["avais", "mangé"],
-    explanation: "Correct! Eerst had ik gegeten (avais mangé), daarna ging ik naar buiten."
-  },
-  {
-    text: ["Elle", "quand je suis arrivé."],
-    answers: ["était", "partie"],
-    explanation: "Correct! Zij was al vertrokken (était partie) toen ik aankwam."
-  },
-  {
-    text: ["Nous", "nos devoirs avant le dîner."],
-    answers: ["avions", "fini"],
-    explanation: "Correct! Wij hadden onze huiswerk al afgemaakt (avions fini) voor het diner."
-  }
+  { text: ["Quand j’", "à l’école."], answers: ["avais", "arrivé"], explanation: "Ik was aangekomen (avais arrivé) op school." },
+  { text: ["Elle", "son livre avant de dormir."], answers: ["avait", "lu"], explanation: "Ze had haar boek gelezen (avait lu) voordat ze ging slapen." },
+  { text: ["Nous", "le dîner avant qu’il n’arrive."], answers: ["avions", "préparé"], explanation: "Wij hadden het avondeten klaargemaakt (avions préparé) voordat hij arriveerde." },
+  { text: ["Ils", "la lettre avant de partir."], answers: ["avaient", "envoyé"], explanation: "Ze hadden de brief verstuurd (avaient envoyé) voor ze vertrokken." },
+  { text: ["Tu", "le film avant que je vienne."], answers: ["avais", "regardé"], explanation: "Je had de film gekeken (avais regardé) voor ik kwam." },
+  { text: ["Je", "mes devoirs avant le dîner."], answers: ["avais", "fait"], explanation: "Ik had mijn huiswerk gemaakt (avais fait) voor het diner." },
+  { text: ["Marie", "heureuse quand elle a vu son cadeau."], answers: ["avait", "été"], explanation: "Marie was blij geweest (avait été) toen ze haar cadeau zag." },
+  { text: ["Nous", "la maison avant l’orage."], answers: ["avions", "nettoyé"], explanation: "We hadden het huis schoongemaakt (avions nettoyé) voor de storm." },
+  { text: ["Ils", "le gâteau avant l’arrivée des invités."], answers: ["avaient", "préparé"], explanation: "Ze hadden de taart klaargemaakt (avaient préparé) voor de gasten arriveerden." },
+  { text: ["Je", "la fenêtre avant qu’il pleuve."], answers: ["avais", "fermée"], explanation: "Ik had het raam gesloten (avais fermée) voor het begon te regenen." },
+  { text: ["Tu", "ton manteau avant de sortir."], answers: ["avais", "mis"], explanation: "Je had je jas aangedaan (avais mis) voor je naar buiten ging." },
+  { text: ["Elle", "ses clés avant de partir."], answers: ["avait", "pris"], explanation: "Ze had haar sleutels gepakt (avait pris) voor ze vertrok." },
+  { text: ["Nous", "la voiture avant de partir."], answers: ["avions", "lavé"], explanation: "We hadden de auto gewassen (avions lavé) voordat we vertrokken." },
+  { text: ["Ils", "le cadeau avant l’anniversaire."], answers: ["avaient", "acheté"], explanation: "Ze hadden het cadeau gekocht (avaient acheté) voor de verjaardag." },
+  { text: ["Je", "la lettre avant qu’elle arrive."], answers: ["avais", "écrit"], explanation: "Ik had de brief geschreven (avais écrit) voor zij arriveerde." }
 ];
 
 export default function PlusQueParfaitExercise() {
@@ -27,7 +27,6 @@ export default function PlusQueParfaitExercise() {
     newInputs[sentenceIdx][wordIdx] = value;
     setInputs(newInputs);
 
-    // Bereken score live
     let correctCount = 0;
     newInputs.forEach((words, idx) => {
       if(words.every((w, i) => w.toLowerCase().trim() === sentences[idx].answers[i])) correctCount++;
@@ -41,26 +40,30 @@ export default function PlusQueParfaitExercise() {
   };
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Oefening: Plus-que-parfait</h2>
+    <div className="p-4 max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">Oefening: Plus-que-parfait</h2>
       <div className="mb-4 font-semibold">Score: {score} / {sentences.length}</div>
 
       {sentences.map((s, idx) => (
         <div key={idx} className="flex flex-wrap items-center gap-2 mb-3">
-          {s.text.slice(0,1).map((part, i) => <span key={i}>{part}</span>)}
+          <span>{s.text[0]}</span>
           {s.answers.map((_, i) => (
             <input
               key={i}
-              className={`border p-1 w-24 ${inputs[idx][i] === s.answers[i] ? 'border-green-500 bg-green-100' : ''}`}
+              className={`border p-1 w-28 ${inputs[idx][i] === s.answers[i] ? 'border-green-500 bg-green-100' : ''}`}
               value={inputs[idx][i]}
               onChange={e => handleChange(idx, i, e.target.value)}
             />
           ))}
-          <span>{s.text.slice(1)}</span>
+          <span>{s.text[1]}</span>
+          {inputs[idx].every((w,i) => w.toLowerCase().trim() === s.answers[i]) && (
+            <div className="text-green-700 text-sm ml-2">{s.explanation}</div>
+          )}
         </div>
       ))}
 
-      <button onClick={reset} className="mt-4 px-3 py-1 bg-gray-300 rounded">Reset</button>
+      <button onClick={reset} className="mt-4 px-3 py-2 bg-gray-300 rounded hover:bg-gray-400">Reset</button>
     </div>
   );
 }
+
