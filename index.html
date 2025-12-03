@@ -3,20 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Typ-oefening met Realistisch Niveau</title>
+<title>Typing Oefening met Progress Bar en Realtime WPM</title>
 <style>
   body {
     font-family: sans-serif;
     display: flex;
     justify-content: center;
-    padding: 50px;
+    padding: 30px;
     background-color: #f0f0f0;
   }
-
   .container {
-    width: 650px;
+    width: 700px;
   }
-
   textarea {
     width: 100%;
     height: 100px;
@@ -24,7 +22,6 @@
     margin-bottom: 10px;
     padding: 10px;
   }
-
   .typing-container {
     width: 100%;
     height: 200px;
@@ -38,42 +35,32 @@
     white-space: pre-wrap;
     margin-bottom: 10px;
   }
-
-  .letter {
-    display: inline-block;
-  }
-
-  .current {
-    background-color: #d0f0f0;
-  }
-
-  .correct {
-    color: green;
-  }
-
-  .incorrect {
-    color: red;
-  }
-
+  .letter { display: inline-block; }
+  .current { background-color: #d0f0f0; }
+  .correct { color: green; }
+  .incorrect { color: red; }
   input[type="text"] {
     width: 100%;
     padding: 10px;
     font-size: 16px;
   }
-
-  .stats {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    font-size: 16px;
-  }
-
-  button {
+  .stats { display: flex; justify-content: space-between; margin-top: 10px; font-size: 16px; }
+  button { margin-bottom: 10px; padding: 10px 15px; font-size: 16px; margin-right: 10px; }
+  .progress-container {
+    width: 100%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
     margin-bottom: 10px;
-    padding: 10px 15px;
-    font-size: 16px;
-    margin-right: 10px;
   }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #4caf50;
+    border-radius: 10px;
+    transition: width 0.2s;
+  }
+  canvas { background: #fff; border: 1px solid #ccc; margin-top: 10px; border-radius: 5px; }
 </style>
 </head>
 <body>
@@ -85,12 +72,19 @@
 
   <div class="typing-container" id="text-container"></div>
   <input type="text" id="input-field" autocomplete="off" placeholder="Begin met typen..." disabled>
-  
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
   <div class="stats">
     <div>Tijd: <span id="time">0</span> s</div>
     <div>WPM: <span id="wpm">0</span></div>
     <div>Fouten: <span id="errors">0</span></div>
+    <div>Niveau: <span id="level">Beginner</span></div>
   </div>
+
+  <canvas id="wpm-chart" width="680" height="100"></canvas>
 </div>
 
 <script>
@@ -101,14 +95,18 @@ const inputField = document.getElementById('input-field');
 const timeDisplay = document.getElementById('time');
 const wpmDisplay = document.getElementById('wpm');
 const errorsDisplay = document.getElementById('errors');
+const levelDisplay = document.getElementById('level');
 const customTextArea = document.getElementById('custom-text');
+const progressBar = document.getElementById('progress-bar');
+const canvas = document.getElementById('wpm-chart');
+const ctx = canvas.getContext('2d');
 
 let text = '';
 let currentIndex = 0;
 let errors = 0;
 let startTime = null;
+let wpmHistory = [];
 
-// Render de tekst per letter
 function renderText(text) {
   textContainer.innerHTML = '';
   text.split('').forEach((char, i) => {
@@ -120,21 +118,6 @@ function renderText(text) {
   });
 }
 
-// Update live statistieken
-function updateStats() {
-  if (!startTime) return;
-  const now = new Date();
-  const elapsed = ((now - startTime) / 1000);
-  const minutes = elapsed / 60;
-  const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
-  const wpm = minutes > 0 ? Math.round((correctLetters / 5) / minutes) : 0;
-
-  timeDisplay.textContent = Math.floor(elapsed);
-  wpmDisplay.textContent = wpm;
-  errorsDisplay.textContent = errors;
-}
-
-// Niveau berekenen op basis van WPM en accuraatheid
 function calculateLevel(wpm, accuracy) {
   let level = '';
   if (wpm <= 20) level = 'Beginner';
@@ -144,7 +127,6 @@ function calculateLevel(wpm, accuracy) {
   else if (wpm <= 100) level = 'Zeer goed';
   else level = 'Expert';
 
-  // Pas niveau aan op basis van accuraatheid
   if (accuracy < 80) {
     if (level === 'Expert') level = 'Zeer goed';
     else if (level === 'Zeer goed') level = 'Goed';
@@ -161,53 +143,73 @@ function calculateLevel(wpm, accuracy) {
   return level;
 }
 
-// Feedback tonen na voltooiing
+function updateStats() {
+  if (!startTime) return;
+  const now = new Date();
+  const elapsed = ((now - startTime) / 1000);
+  const minutes = elapsed / 60;
+  const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
+  const wpm = minutes > 0 ? Math.round((correctLetters / 5) / minutes) : 0;
+
+  timeDisplay.textContent = Math.floor(elapsed);
+  wpmDisplay.textContent = wpm;
+  errorsDisplay.textContent = errors;
+
+  const accuracy = Math.round((correctLetters / text.length) * 100);
+  levelDisplay.textContent = calculateLevel(wpm, accuracy);
+
+  // Update progress bar
+  progressBar.style.width = `${(currentIndex / text.length) * 100}%`;
+
+  // Update WPM grafiek
+  wpmHistory.push(wpm);
+  drawWPMChart();
+}
+
+function drawWPMChart() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height);
+  const step = canvas.width / (wpmHistory.length || 1);
+  wpmHistory.forEach((wpm, i) => {
+    const x = i * step;
+    const y = canvas.height - (wpm / 150 * canvas.height);
+    ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = 'blue';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
 function showFeedback() {
   const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
-  const totalLetters = text.length;
-  const accuracy = Math.round((correctLetters / totalLetters) * 100);
+  const accuracy = Math.round((correctLetters / text.length) * 100);
   const wpm = parseInt(wpmDisplay.textContent);
   const level = calculateLevel(wpm, accuracy);
 
-  let message = `Typ-oefening voltooid!\n\nTijd: ${timeDisplay.textContent} s\nWPM: ${wpm}\nFouten: ${errors}\nAccuraatheid: ${accuracy}%\nNiveau: ${level}`;
-
-  if (accuracy < 90) {
-    message += "\nTip: probeer wat langzamer te typen om nauwkeuriger te zijn.";
-  } else if (accuracy >= 95 && wpm >= 60) {
-    message += "\nUitstekend! Je typt snel en nauwkeurig!";
-  }
-
+  let message = `Typ-oefening voltooid!\nTijd: ${timeDisplay.textContent} s\nWPM: ${wpm}\nFouten: ${errors}\nAccuraatheid: ${accuracy}%\nNiveau: ${level}`;
+  if (accuracy < 90) message += "\nTip: probeer nauwkeuriger te typen.";
+  else if (accuracy >= 95 && wpm >= 60) message += "\nUitstekend! Snel en nauwkeurig!";
   alert(message);
 }
 
-// Event listener voor typen
 inputField.addEventListener('input', () => {
   if (!startTime) startTime = new Date();
-
   const typed = inputField.value;
   errors = 0;
 
   textContainer.querySelectorAll('.letter').forEach((span, i) => {
-    span.classList.remove('current', 'correct', 'incorrect');
-
-    if (i === typed.length) {
-      span.classList.add('current');
-    }
-
+    span.classList.remove('current','correct','incorrect');
+    if (i === typed.length) span.classList.add('current');
     if (typed[i] !== undefined) {
-      if (typed[i] === span.textContent) {
-        span.classList.add('correct');
-      } else {
-        span.classList.add('incorrect');
-        errors++;
-      }
+      if (typed[i] === span.textContent) span.classList.add('correct');
+      else { span.classList.add('incorrect'); errors++; }
     }
   });
 
   currentIndex = typed.length;
-
   if (textContainer.children[currentIndex]) {
-    textContainer.children[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    textContainer.children[currentIndex].scrollIntoView({behavior:'smooth', block:'center'});
   }
 
   updateStats();
@@ -218,40 +220,24 @@ inputField.addEventListener('input', () => {
   }
 });
 
-// Start-knop
 startBtn.addEventListener('click', () => {
   text = customTextArea.value.trim();
-  if (text === '') {
-    alert("Gelieve eerst een tekst in te voeren.");
-    return;
-  }
+  if (!text) { alert("Voer eerst een tekst in."); return; }
 
-  currentIndex = 0;
-  errors = 0;
-  startTime = null;
-  inputField.value = '';
-  inputField.disabled = false;
-  inputField.focus();
-
-  timeDisplay.textContent = '0';
-  wpmDisplay.textContent = '0';
-  errorsDisplay.textContent = '0';
+  currentIndex = 0; errors = 0; startTime = null; wpmHistory = [];
+  inputField.value = ''; inputField.disabled = false; inputField.focus();
+  timeDisplay.textContent='0'; wpmDisplay.textContent='0'; errorsDisplay.textContent='0'; levelDisplay.textContent='Beginner';
+  progressBar.style.width='0%';
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
   renderText(text);
 });
 
-// Reset-knop
 resetBtn.addEventListener('click', () => {
-  textContainer.innerHTML = '';
-  inputField.value = '';
-  inputField.disabled = true;
-  customTextArea.value = '';
-  timeDisplay.textContent = '0';
-  wpmDisplay.textContent = '0';
-  errorsDisplay.textContent = '0';
-  currentIndex = 0;
-  errors = 0;
-  startTime = null;
+  textContainer.innerHTML=''; inputField.value=''; inputField.disabled=true;
+  customTextArea.value=''; timeDisplay.textContent='0'; wpmDisplay.textContent='0';
+  errorsDisplay.textContent='0'; levelDisplay.textContent='Beginner'; progressBar.style.width='0%';
+  currentIndex=0; errors=0; startTime=null; wpmHistory=[]; ctx.clearRect(0,0,canvas.width,canvas.height);
 });
 </script>
 
