@@ -3,110 +3,232 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oefening – Imparfait</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+<title>Typ-oefening met Feedback</title>
+<style>
+  body {
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+    background-color: #f0f0f0;
+  }
+
+  .container {
+    width: 650px;
+  }
+
+  textarea {
+    width: 100%;
+    height: 100px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+
+  .typing-container {
+    width: 100%;
+    height: 200px;
+    overflow-y: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    line-height: 1.6;
+    font-size: 18px;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+  }
+
+  .letter {
+    display: inline-block;
+  }
+
+  .current {
+    background-color: #d0f0f0;
+  }
+
+  .correct {
+    color: green;
+  }
+
+  .incorrect {
+    color: red;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 16px;
+  }
+
+  button {
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    font-size: 16px;
+    margin-right: 10px;
+  }
+</style>
 </head>
-<body class="bg-white text-gray-900 font-sans p-4">
+<body>
 
-<div class="max-w-3xl mx-auto">
+<div class="container">
+  <textarea id="custom-text" placeholder="Plak hier je eigen tekst..."></textarea>
+  <button id="start-btn">Start Oefening</button>
+  <button id="reset-btn">Reset Oefening</button>
 
-  <h1 class="text-2xl font-bold mb-4">Oefening – Imparfait</h1>
-
-  <!-- Score -->
-  <div id="scoreBox" class="mb-4 font-semibold">Score: 0 / 5</div>
-
-  <!-- Oefening -->
-  <div class="space-y-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <span>Quand j’</span>
-      <input type="text" class="border border-gray-300 p-1 w-32 rounded" data-answer="étais" placeholder="être">
-      <span>petit, j’aimais les dessins animés.</span>
-    </div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <span>Il</span>
-      <input type="text" class="border border-gray-300 p-1 w-32 rounded" data-answer="faisait" placeholder="faire">
-      <span>très froid en hiver.</span>
-    </div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <span>Nous</span>
-      <input type="text" class="border border-gray-300 p-1 w-32 rounded" data-answer="jouions" placeholder="jouer">
-      <span>au football tous les mercredis.</span>
-    </div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <span>Tu</span>
-      <input type="text" class="border border-gray-300 p-1 w-32 rounded" data-answer="mangeais" placeholder="manger">
-      <span>souvent des crêpes, non ?</span>
-    </div>
-
-    <div class="flex flex-wrap items-center gap-2">
-      <span>Le chat</span>
-      <input type="text" class="border border-gray-300 p-1 w-32 rounded" data-answer="dormait" placeholder="dormir">
-      <span>sur le canapé.</span>
-    </div>
+  <div class="typing-container" id="text-container"></div>
+  <input type="text" id="input-field" autocomplete="off" placeholder="Begin met typen..." disabled>
+  
+  <div class="stats">
+    <div>Tijd: <span id="time">0</span> s</div>
+    <div>WPM: <span id="wpm">0</span></div>
+    <div>Fouten: <span id="errors">0</span></div>
   </div>
-
-  <!-- Knoppen -->
-  <div class="mt-4 flex gap-2">
-    <button id="checkBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Controleer</button>
-    <button id="resetBtn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Reset</button>
-    <button id="showAnswersBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Toon antwoorden</button>
-  </div>
-
 </div>
 
 <script>
-const inputs = document.querySelectorAll('input[data-answer]');
-const scoreBox = document.getElementById('scoreBox');
+const startBtn = document.getElementById('start-btn');
+const resetBtn = document.getElementById('reset-btn');
+const textContainer = document.getElementById('text-container');
+const inputField = document.getElementById('input-field');
+const timeDisplay = document.getElementById('time');
+const wpmDisplay = document.getElementById('wpm');
+const errorsDisplay = document.getElementById('errors');
+const customTextArea = document.getElementById('custom-text');
 
-function updateScore() {
-  let correct = 0;
-  inputs.forEach(input => {
-    if(input.value.trim().toLowerCase() === input.dataset.answer.toLowerCase()) correct++;
+let text = '';
+let currentIndex = 0;
+let errors = 0;
+let startTime = null;
+
+function renderText(text) {
+  textContainer.innerHTML = '';
+  text.split('').forEach((char, i) => {
+    const span = document.createElement('span');
+    span.textContent = char;
+    span.className = 'letter';
+    if (i === 0) span.classList.add('current');
+    textContainer.appendChild(span);
   });
-  scoreBox.textContent = `Score: ${correct} / ${inputs.length}`;
 }
 
-// Controleer antwoorden
-document.getElementById('checkBtn').addEventListener('click', () => {
-  inputs.forEach(input => {
-    const val = input.value.trim().toLowerCase();
-    const ans = input.dataset.answer.toLowerCase();
-    if(val === ans){
-      input.classList.remove('border-red-500','bg-red-100');
-      input.classList.add('border-green-500','bg-green-100');
-    } else {
-      input.classList.remove('border-green-500','bg-green-100');
-      input.classList.add('border-red-500','bg-red-100');
+function updateStats() {
+  if (!startTime) return;
+  const now = new Date();
+  const elapsed = ((now - startTime) / 1000); // seconden
+  const minutes = elapsed / 60;
+  const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
+  const wpm = minutes > 0 ? Math.round((correctLetters / 5) / minutes) : 0;
+
+  timeDisplay.textContent = Math.floor(elapsed);
+  wpmDisplay.textContent = wpm;
+  errorsDisplay.textContent = errors;
+}
+
+function showFeedback() {
+  const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
+  const totalLetters = text.length;
+  const accuracy = Math.round((correctLetters / totalLetters) * 100);
+
+  // Niveau op basis van WPM en accuraatheid
+  const wpm = parseInt(wpmDisplay.textContent);
+  let level = '';
+  if (wpm <= 20) level = 'Beginner';
+  else if (wpm <= 40) level = 'Basis';
+  else if (wpm <= 60) level = 'Gemiddeld';
+  else if (wpm <= 80) level = 'Goed';
+  else if (wpm <= 100) level = 'Zeer goed';
+  else level = 'Expert';
+
+  let message = `Typ-oefening voltooid!\n\nTijd: ${timeDisplay.textContent} s\nWPM: ${wpm}\nFouten: ${errors}\nAccuraatheid: ${accuracy}%\nNiveau: ${level}`;
+
+  if (accuracy < 90) {
+    message += "\nTip: probeer wat langzamer te typen om nauwkeuriger te zijn.";
+  } else if (accuracy >= 95 && wpm >= 60) {
+    message += "\nUitstekend! Je typt snel en nauwkeurig!";
+  }
+
+  alert(message);
+}
+
+inputField.addEventListener('input', () => {
+  if (!startTime) startTime = new Date();
+
+  const typed = inputField.value;
+  errors = 0;
+
+  textContainer.querySelectorAll('.letter').forEach((span, i) => {
+    span.classList.remove('current', 'correct', 'incorrect');
+
+    if (i === typed.length) {
+      span.classList.add('current');
+    }
+
+    if (typed[i] !== undefined) {
+      if (typed[i] === span.textContent) {
+        span.classList.add('correct');
+      } else {
+        span.classList.add('incorrect');
+        errors++;
+      }
     }
   });
-  updateScore();
+
+  currentIndex = typed.length;
+
+  if (textContainer.children[currentIndex]) {
+    textContainer.children[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  updateStats();
+
+  if (currentIndex >= text.length) {
+    inputField.disabled = true;
+    showFeedback();
+  }
 });
 
-// Reset
-document.getElementById('resetBtn').addEventListener('click', () => {
-  inputs.forEach(input => {
-    input.value = '';
-    input.classList.remove('border-green-500','bg-green-100','border-red-500','bg-red-100');
-  });
-  updateScore();
+startBtn.addEventListener('click', () => {
+  text = customTextArea.value.trim();
+  if (text === '') {
+    alert("Gelieve eerst een tekst in te voeren.");
+    return;
+  }
+
+  currentIndex = 0;
+  errors = 0;
+  startTime = null;
+  inputField.value = '';
+  inputField.disabled = false;
+  inputField.focus();
+
+  timeDisplay.textContent = '0';
+  wpmDisplay.textContent = '0';
+  errorsDisplay.textContent = '0';
+
+  renderText(text);
 });
 
-// Toon antwoorden
-document.getElementById('showAnswersBtn').addEventListener('click', () => {
-  inputs.forEach(input => {
-    input.value = input.dataset.answer;
-    input.classList.remove('border-red-500','bg-red-100');
-    input.classList.add('border-green-500','bg-green-100');
-  });
-  updateScore();
+resetBtn.addEventListener('click', () => {
+  textContainer.innerHTML = '';
+  inputField.value = '';
+  inputField.disabled = true;
+  customTextArea.value = '';
+  timeDisplay.textContent = '0';
+  wpmDisplay.textContent = '0';
+  errorsDisplay.textContent = '0';
+  currentIndex = 0;
+  errors = 0;
+  startTime = null;
 });
-
 </script>
 
 </body>
 </html>
-
-
