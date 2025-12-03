@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Typ-oefening met Feedback</title>
+<title>Typ-oefening met Realistisch Niveau</title>
 <style>
   body {
     font-family: sans-serif;
@@ -108,6 +108,7 @@ let currentIndex = 0;
 let errors = 0;
 let startTime = null;
 
+// Render de tekst per letter
 function renderText(text) {
   textContainer.innerHTML = '';
   text.split('').forEach((char, i) => {
@@ -119,10 +120,11 @@ function renderText(text) {
   });
 }
 
+// Update live statistieken
 function updateStats() {
   if (!startTime) return;
   const now = new Date();
-  const elapsed = ((now - startTime) / 1000); // seconden
+  const elapsed = ((now - startTime) / 1000);
   const minutes = elapsed / 60;
   const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
   const wpm = minutes > 0 ? Math.round((correctLetters / 5) / minutes) : 0;
@@ -132,13 +134,8 @@ function updateStats() {
   errorsDisplay.textContent = errors;
 }
 
-function showFeedback() {
-  const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
-  const totalLetters = text.length;
-  const accuracy = Math.round((correctLetters / totalLetters) * 100);
-
-  // Niveau op basis van WPM en accuraatheid
-  const wpm = parseInt(wpmDisplay.textContent);
+// Niveau berekenen op basis van WPM en accuraatheid
+function calculateLevel(wpm, accuracy) {
   let level = '';
   if (wpm <= 20) level = 'Beginner';
   else if (wpm <= 40) level = 'Basis';
@@ -146,6 +143,31 @@ function showFeedback() {
   else if (wpm <= 80) level = 'Goed';
   else if (wpm <= 100) level = 'Zeer goed';
   else level = 'Expert';
+
+  // Pas niveau aan op basis van accuraatheid
+  if (accuracy < 80) {
+    if (level === 'Expert') level = 'Zeer goed';
+    else if (level === 'Zeer goed') level = 'Goed';
+    else if (level === 'Goed') level = 'Gemiddeld';
+    else if (level === 'Gemiddeld') level = 'Basis';
+    else if (level === 'Basis') level = 'Beginner';
+  } else if (accuracy < 90) {
+    if (level === 'Expert') level = 'Zeer goed';
+    else if (level === 'Zeer goed') level = 'Goed';
+    else if (level === 'Goed') level = 'Gemiddeld';
+    else if (level === 'Gemiddeld') level = 'Basis';
+    else if (level === 'Basis') level = 'Beginner';
+  }
+  return level;
+}
+
+// Feedback tonen na voltooiing
+function showFeedback() {
+  const correctLetters = textContainer.querySelectorAll('.letter.correct').length;
+  const totalLetters = text.length;
+  const accuracy = Math.round((correctLetters / totalLetters) * 100);
+  const wpm = parseInt(wpmDisplay.textContent);
+  const level = calculateLevel(wpm, accuracy);
 
   let message = `Typ-oefening voltooid!\n\nTijd: ${timeDisplay.textContent} s\nWPM: ${wpm}\nFouten: ${errors}\nAccuraatheid: ${accuracy}%\nNiveau: ${level}`;
 
@@ -158,6 +180,7 @@ function showFeedback() {
   alert(message);
 }
 
+// Event listener voor typen
 inputField.addEventListener('input', () => {
   if (!startTime) startTime = new Date();
 
@@ -195,6 +218,7 @@ inputField.addEventListener('input', () => {
   }
 });
 
+// Start-knop
 startBtn.addEventListener('click', () => {
   text = customTextArea.value.trim();
   if (text === '') {
@@ -216,6 +240,7 @@ startBtn.addEventListener('click', () => {
   renderText(text);
 });
 
+// Reset-knop
 resetBtn.addEventListener('click', () => {
   textContainer.innerHTML = '';
   inputField.value = '';
