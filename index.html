@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Typing Oefening met Progress Bar en Realtime WPM</title>
+<title>Typing Oefening met Progress Bar en Live Feedback</title>
 <style>
   body {
     font-family: sans-serif;
@@ -60,7 +60,6 @@
     border-radius: 10px;
     transition: width 0.2s;
   }
-  canvas { background: #fff; border: 1px solid #ccc; margin-top: 10px; border-radius: 5px; }
 </style>
 </head>
 <body>
@@ -83,8 +82,6 @@
     <div>Fouten: <span id="errors">0</span></div>
     <div>Niveau: <span id="level">Beginner</span></div>
   </div>
-
-  <canvas id="wpm-chart" width="680" height="100"></canvas>
 </div>
 
 <script>
@@ -98,14 +95,11 @@ const errorsDisplay = document.getElementById('errors');
 const levelDisplay = document.getElementById('level');
 const customTextArea = document.getElementById('custom-text');
 const progressBar = document.getElementById('progress-bar');
-const canvas = document.getElementById('wpm-chart');
-const ctx = canvas.getContext('2d');
 
 let text = '';
 let currentIndex = 0;
 let errors = 0;
 let startTime = null;
-let wpmHistory = [];
 
 function renderText(text) {
   textContainer.innerHTML = '';
@@ -160,25 +154,6 @@ function updateStats() {
 
   // Update progress bar
   progressBar.style.width = `${(currentIndex / text.length) * 100}%`;
-
-  // Update WPM grafiek
-  wpmHistory.push(wpm);
-  drawWPMChart();
-}
-
-function drawWPMChart() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.beginPath();
-  ctx.moveTo(0, canvas.height);
-  const step = canvas.width / (wpmHistory.length || 1);
-  wpmHistory.forEach((wpm, i) => {
-    const x = i * step;
-    const y = canvas.height - (wpm / 150 * canvas.height);
-    ctx.lineTo(x, y);
-  });
-  ctx.strokeStyle = 'blue';
-  ctx.lineWidth = 2;
-  ctx.stroke();
 }
 
 function showFeedback() {
@@ -224,11 +199,10 @@ startBtn.addEventListener('click', () => {
   text = customTextArea.value.trim();
   if (!text) { alert("Voer eerst een tekst in."); return; }
 
-  currentIndex = 0; errors = 0; startTime = null; wpmHistory = [];
+  currentIndex = 0; errors = 0; startTime = null;
   inputField.value = ''; inputField.disabled = false; inputField.focus();
   timeDisplay.textContent='0'; wpmDisplay.textContent='0'; errorsDisplay.textContent='0'; levelDisplay.textContent='Beginner';
   progressBar.style.width='0%';
-  ctx.clearRect(0,0,canvas.width,canvas.height);
 
   renderText(text);
 });
@@ -237,7 +211,7 @@ resetBtn.addEventListener('click', () => {
   textContainer.innerHTML=''; inputField.value=''; inputField.disabled=true;
   customTextArea.value=''; timeDisplay.textContent='0'; wpmDisplay.textContent='0';
   errorsDisplay.textContent='0'; levelDisplay.textContent='Beginner'; progressBar.style.width='0%';
-  currentIndex=0; errors=0; startTime=null; wpmHistory=[]; ctx.clearRect(0,0,canvas.width,canvas.height);
+  currentIndex=0; errors=0; startTime=null;
 });
 </script>
 
